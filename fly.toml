@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for prjna-ai on 2026-05-01T12:13:11Z
+# fly.toml app configuration file generated for prjna-ai on 2026-05-01T12:34:53Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -16,11 +16,11 @@ primary_region = 'ams'
   min_machines_running = 1
 
   [[http_service.checks]]
-    grace_period = "5s"
-    interval = "15s"
-    method = "GET"
-    path = "/"
-    timeout = "5s"
+    interval = '15s'
+    timeout = '5s'
+    grace_period = '5s'
+    method = 'GET'
+    path = '/'
 
 [[vm]]
   size = 'shared-cpu-1x'
