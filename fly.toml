@@ -1,10 +1,10 @@
-app = "personal-intelligence"
+app = "prjna-ai"
 primary_region = "sin"
 
 [build]
 
 [http_service]
-  internal_port = 80
+  internal_port = 8080
   force_https = true
   auto_stop_machines = "stop"
   auto_start_machines = true
