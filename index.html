@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0d0c0b;
+  --bg-warm:  #111009;
+  --fg:       #C8C0B0;
+  --fg-dim:   rgba(200,192,176,0.42);
+  --accent:   #4A9EFF;
+  --bone:     #F5EDD6;
+  --rule:     rgba(200,192,176,0.10);
+  --serif:    'Playfair Display', Georgia, serif;
+  --mono:     'IBM Plex Mono', 'Courier New', monospace;
+  --col:      680px;
+  --gutter:   clamp(1.5rem, 9vw, 10rem);
+}
+
+/* ── BASE ── */
+html {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 20px;
+  line-height: 1.85;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+/* Paper grain overlay */
+html::after {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.038;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+body { min-height: 100vh; }
+
+/* ── LAYOUT WRAPPER ── */
+.doc {
+  max-width: calc(var(--col) + var(--gutter) * 2);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* ── MARGINAL NUMBERS ── */
+.section {
+  position: relative;
+  padding: 4.5rem 0;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+}
+.section.in { opacity: 1; transform: translateY(0); }
+
+.section[data-n]::before {
+  content: attr(data-n);
+  position: absolute;
+  left: calc(-1 * var(--gutter) + 0.5rem);
+  top: 4.5rem;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  color: rgba(200,192,176,0.18);
+  user-select: none;
+}
+
+/* ── PARAGRAPHS ── */
+p {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 2;
+  color: var(--fg);
+  max-width: var(--col);
+  margin-bottom: 1.75em;
+  text-wrap: pretty;
+}
+p:last-child { margin-bottom: 0; }
+
+/* ── SPINE ── */
+.spine { color: var(--bone); font-weight: 500; }
+p.spine { font-size: 22px; }
+
+/* ── THIN RULE ── */
+.rule {
+  width: 2rem; height: 1px;
+  background: rgba(200,192,176,0.18);
+  margin-bottom: 3rem;
+}
+
+/* ══════════════════════════════════════
+   HERO — full viewport width, outside .doc
+══════════════════════════════════════ */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-top: 4rem;
+  padding-bottom: 7rem;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Deep glow */
+.hero__glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 38% 44%,
+      rgba(18,36,80,0.7) 0%,
+      transparent 70%);
+  z-index: 0;
+}
+
+/* Faint horizontal grid lines */
+.hero__grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 79px,
+    rgba(200,192,176,0.03) 79px,
+    rgba(200,192,176,0.03) 80px
+  );
+}
+
+.hero > * { position: relative; z-index: 1; }
+
+/* Eyebrow */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 3.5rem;
+  opacity: 0;
+  animation: riseIn 1s ease forwards 0.3s;
+}
+
+/* Main title */
+.hero__title {
+  font-family: var(--serif);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+  color: var(--bone);
+  margin-bottom: 3.5rem;
+  opacity: 0;
+  animation: riseIn 1.1s ease forwards 0.6s;
+}
+
+.hero__title .word1 {
+  display: block;
+  font-size: clamp(2.8rem, 9vw, 8rem);
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(245,237,214,0.6);
+  letter-spacing: -0.01em;
+  margin-bottom: 0.05em;
+}
+
+.hero__title .word2 {
+  display: block;
+  font-size: clamp(3rem, 10.5vw, 10rem);
+  font-weight: 900;
+  background: linear-gradient(
+    105deg,
+    var(--bone) 0%,
+    #fff9ee 40%,
+    var(--bone) 55%,
+    #e8d8b4 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: riseIn 1.1s ease forwards 0.6s, shimmer 8s ease-in-out infinite 2s;
+  background-size: 200% 100%;
+}
+
+/* Subtitle */
+.hero__sub {
+  font-family: var(--mono);
+  font-size: clamp(14px, 1.3vw, 17px);
+  font-weight: 300;
+  color: var(--fg-dim);
+  letter-spacing: 0.03em;
+  max-width: 44ch;
+  line-height: 1.7;
+  opacity: 0;
+  animation: riseIn 1s ease forwards 1.1s;
+}
+
+/* Scroll cue */
+.hero__scroll {
+  position: absolute;
+  bottom: 2.5rem;
+  left: clamp(1.5rem, 9vw, 10rem);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  opacity: 0;
+  animation: riseIn 1s ease forwards 1.6s;
+}
+.hero__scroll span {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(200,192,176,0.3);
+}
+.hero__scroll-line {
+  width: 48px; height: 1px;
+  background: rgba(200,192,176,0.2);
+  position: relative;
+  overflow: hidden;
+}
+.hero__scroll-line::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: var(--accent);
+  animation: scanLine 2.5s ease-in-out infinite 2s;
+}
+
+/* ══════════════════════════════════════
+   PULL QUOTES
+══════════════════════════════════════ */
+.quote-panel {
+  width: 100%;
+  background: var(--bg-warm);
+  padding: 7rem 0;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.quote-panel.in { opacity: 1; transform: translateY(0); }
+
+/* Left accent bar */
+.quote-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, var(--accent) 25%, var(--accent) 75%, transparent);
+}
+
+/* Inner wrapper — aligned with body column */
+.quote-inner {
+  max-width: calc(var(--col) + var(--gutter) * 2);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* Animated rule above quote */
+.quote-rule {
+  width: 100%;
+  max-width: var(--col);
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  margin-bottom: 3rem;
+  transition: transform 0.9s cubic-bezier(0.16,1,0.3,1) 0.1s;
+}
+.quote-panel.in .quote-rule { transform: scaleX(1); }
+
+.quote-text {
+  font-family: var(--serif);
+  font-size: clamp(1.9rem, 4.2vw, 3.6rem);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.28;
+  color: var(--bone);
+  max-width: var(--col);
+  letter-spacing: -0.018em;
+  margin-bottom: 2.2rem;
+  text-wrap: pretty;
+}
+
+.quote-attr {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* ══════════════════════════════════════
+   CLOSING
+══════════════════════════════════════ */
+.closing {
+  padding: 6rem 0 4rem;
+  border-top: 1px solid var(--rule);
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.closing.in { opacity: 1; transform: translateY(0); }
+
+.closing__first {
+  font-family: var(--serif);
+  font-size: clamp(1.2rem, 2.4vw, 1.7rem);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.65;
+  color: rgba(245,237,214,0.55);
+  max-width: var(--col);
+  margin-bottom: 2.2rem;
+  text-wrap: pretty;
+}
+
+.closing__last {
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--bone);
+  max-width: var(--col);
+  text-wrap: pretty;
+  background: linear-gradient(105deg, var(--bone) 0%, #fff9ee 45%, var(--bone) 60%, #e0cfa0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% 100%;
+  animation: shimmer 10s ease-in-out infinite 3s;
+}
+
+/* ══════════════════════════════════════
+   CTA
+══════════════════════════════════════ */
+.cta-wrap {
+  padding: 4rem 0 9rem;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.cta-wrap.in { opacity: 1; transform: translateY(0); }
+
+.cta-divider {
+  width: 100%; max-width: var(--col);
+  height: 1px;
+  background: var(--rule);
+  margin-bottom: 4rem;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.2rem;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-decoration: none;
+  border: 1px solid rgba(74,158,255,0.5);
+  padding: 1.1em 2.6em;
+  position: relative;
+  transition: color 0.25s ease, border-color 0.25s ease;
+  overflow: hidden;
+}
+.cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  z-index: 0;
+}
+.cta:hover::before { transform: scaleX(1); }
+.cta:hover { color: var(--bg); border-color: var(--accent); }
+.cta span { position: relative; z-index: 1; }
+.cta-arrow {
+  position: relative; z-index: 1;
+  font-size: 16px;
+  transition: transform 0.25s ease;
+}
+.cta:hover .cta-arrow { transform: translateX(4px); }
+
+/* ══════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════ */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 100% 0; }
+  50%  { background-position: 0% 0; }
+  100% { background-position: 100% 0; }
+}
+
+@keyframes scanLine {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* ══════════════════════════════════════
+   SELECTION & MOBILE
+══════════════════════════════════════ */
+::selection { background: var(--accent); color: var(--bg); }
+
+@media (max-width: 660px) {
+  html { font-size: 17px; }
+  p { font-size: 19px; }
+  .hero { padding-bottom: 5rem; }
+  .hero__title .word1 { font-size: clamp(3rem,14vw,5rem); }
+  .hero__title .word2 { font-size: clamp(3.5rem,16vw,6rem); }
+  .section[data-n]::before { display: none; }
+  .quote-panel { padding: 5rem 0; }
+  .quote-text { font-size: clamp(1.5rem,6vw,2.2rem); }
+  .closing__last { font-size: clamp(1.3rem,5vw,1.8rem); }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<header class="hero">
+  <div class="hero__glow" aria-hidden="true"></div>
+  <div class="hero__grid" aria-hidden="true"></div>
+
+  <p class="eyebrow">A Founding Document</p>
+
+  <h1 class="hero__title">
+    <span class="word1">Personal</span>
+    <span class="word2">Intelligence</span>
+  </h1>
+
+  <p class="hero__sub">A system for helping a person form real understanding.</p>
+
+  <div class="hero__scroll" aria-hidden="true">
+    <div class="hero__scroll-line"></div>
+    <span>Read</span>
+  </div>
+</header>
+
+<main class="doc">
+
+  <!-- ═══ § 01 ═══ -->
+  <div class="section" data-n="01">
+    <div class="rule"></div>
+    <p>Most tools help people access information. Personal Intelligence is built for a different problem: the moment where information either becomes understanding or does not.</p>
+    <p class="spine">That is the whole focus.</p>
+  </div>
+
+  <!-- ═══ § 02 ═══ -->
+  <div class="section" data-n="02">
+    <p>We do not have an information problem anymore. We have an understanding problem. People can access books, videos, courses, AI tools, and explanations on almost anything, and still most of the time they get stuck. Not because the knowledge is unavailable, but because the next step of understanding is missing. A person can have all the content in front of them and still not truly see it.</p>
+    <p>Personal Intelligence is built for that exact gap.</p>
+  </div>
+
+  <!-- ═══ § 03 ═══ -->
+  <div class="section" data-n="03">
+    <p>Imagine learning physics with Feynman who can see exactly where your understanding stops. Not a teacher who just keeps explaining. Not a teacher who gives you more content. A teacher who can sense the precise obstacle in your mind and respond in the exact right way for that obstacle.</p>
+    <p>That is what makes rare teachers extraordinary. <span class="spine">The breakthrough is not just knowledge. It is diagnosis.</span></p>
+  </div>
+
+</main>
+
+<!-- ═══ PULL QUOTE: FEYNMAN ═══ -->
+<div class="quote-panel">
+  <div class="quote-inner">
+    <div class="quote-rule"></div>
+    <blockquote class="quote-text">"Physics is like sex: sure, it may give some practical results, but that's not why we do it."</blockquote>
+    <p class="quote-attr">Richard Feynman</p>
+  </div>
+</div>
+
+<main class="doc">
+
+  <!-- ═══ § 04 ═══ -->
+  <div class="section" data-n="04">
+    <p>That is the point. The joy of understanding is not a side effect. It is the engine.</p>
+    <p>Curiosity, the act of genuine comprehension, the spark when something finally lands — these are primary. Outcomes are inevitable byproducts of that process, not the goal itself.</p>
+  </div>
+
+  <!-- ═══ § 05 ═══ -->
+  <div class="section" data-n="05">
+    <div class="rule"></div>
+    <p>Personal Intelligence is not built around one Feynman-like response. It is built around many.</p>
+    <p>These are called cognitive tools. A cognitive tool is a specialized process built for a specific bottleneck in understanding. One tool may help when the mind is overloaded. Another may help when a missing connection is blocking progress. Another may help when an existing model must be broken and replaced before deeper understanding can form.</p>
+    <p>There are hundreds of these tools across the full space of understanding, each designed to solve a different kind of constraint.</p>
+  </div>
+
+  <!-- ═══ § 06 ═══ -->
+  <div class="section" data-n="06">
+    <p>But the tool is inert without the person engaging it. Things do not change the world. People change the world by using things. The focus is on the using — the conscious participation. That is what produces resonance. Never before. Never without it.</p>
+    <p>Resonance is not metaphorical. It is the felt signal of real understanding — the aha moment, the insight that lands. It has concrete properties. You know when it happened. It is discrete, not a vague feeling. It accumulates across interactions. And it is only produced by conscious participation. Attention and curiosity are the only fuel required. Passive consumption generates none.</p>
+  </div>
+
+  <!-- ═══ § 07 ═══ -->
+  <div class="section" data-n="07">
+    <p>Each cognitive tool produces a specific kind of resonance — and that resonance is the material. Not a feeling, not a side effect: a concrete thing that accumulates, that the next tool runs on.</p>
+    <p>The resonance from one tool is the raw material for the next. The game never ends because each encounter produces more of what makes the next encounter possible.</p>
+  </div>
+
+  <!-- ═══ § 08 ═══ -->
+  <div class="section" data-n="08">
+    <div class="rule"></div>
+    <p>Personal Intelligence does not start with a syllabus. It starts with your current understanding.</p>
+    <p>At any moment, you already know some things, partly understand some things, and are blocked on others. Personal Intelligence works at that boundary. It reads where you are, identifies the kind of obstacle you are hitting, and creates the right next encounter for that obstacle.</p>
+    <p>That next encounter is the important part. Not too easy, where nothing changes. Not too overwhelming, where everything becomes noise. Right at the edge where a new understanding can form.</p>
+  </div>
+
+  <!-- ═══ § 09 ═══ -->
+  <div class="section" data-n="09">
+    <p>When that edge is reached, you feel it. Something does not connect. Something feels off. Something is almost clear but not yet. Something important becomes visible as a gap.</p>
+    <p>Personal Intelligence is built to work with that moment.</p>
+    <p>You sit down to understand something. Personal Intelligence does not simply give you the next chapter. It gives you the next meaningful encounter. You engage with it. You feel a real friction. You stay with it. Then something shifts. A pattern becomes clear that was not clear before.</p>
+    <p>You do not just receive more information. You actually understand something new.</p>
+  </div>
+
+  <!-- ═══ § 10 ═══ -->
+  <div class="section" data-n="10">
+    <p>Right now, this entire process is invisible. You cannot see when understanding happens, how strong it is, or whether it is accumulating. Personal Intelligence makes it visible.</p>
+    <p>Personal Intelligence records that shift. You connect it to what you already know. The next session begins from there, not from zero. That is how understanding compounds.</p>
+    <p>Every real understanding changes what you can see next. Once you understand something, it becomes part of your foundation. That foundation makes new gaps visible that you could not even notice before. Your questions get deeper, the next step can be chosen more accurately, and the system gets better at guiding you.</p>
+    <p>The person gets better at understanding, and the system gets better at helping. Both improve together.</p>
+  </div>
+
+</main>
+
+<!-- ═══ PULL QUOTE: CARVER MEAD ═══ -->
+<div class="quote-panel">
+  <div class="quote-inner">
+    <div class="quote-rule"></div>
+    <blockquote class="quote-text">"Right now, today, we can't see the thing that's going to be most important 100 years from now. We cannot see the thing. At all. But whatever that thing is — people will have to think it. My job is to make sure our children can."</blockquote>
+    <p class="quote-attr">Carver Mead — Caltech EE Centennial</p>
+  </div>
+</div>
+
+<main class="doc">
+
+  <!-- ═══ § 11 ═══ -->
+  <div class="section" data-n="11">
+    <p>That is the terminal purpose of Personal Intelligence. Not to teach any specific domain or technology — those will become obsolete. But to build powerful, general, technology-independent ways of thinking. To accumulate the kind of resonance that makes it possible to think things we cannot yet see.</p>
+    <p>Today, deep understanding often depends on rare teachers, unusual environments, or years of struggle without the right guide. Personal Intelligence aims to change that — to meet a person at the edge of their current understanding and keep helping them move forward across domains, across time, across increasing levels of depth.</p>
+    <p>If that works, the implication is large. Not just better learning. Not just better tools. A new way for human beings to grow their understanding with much greater precision than before.</p>
+  </div>
+
+  <!-- ═══ CLOSING ═══ -->
+  <div class="closing">
+    <p class="closing__first">The result is not just more information.</p>
+    <p class="closing__last">The result is a person who can keep moving deeper into understanding, with a system that keeps getting better at helping them do it.</p>
+  </div>
+
+  <!-- ═══ CTA ═══ -->
+  <div class="cta-wrap">
+    <div class="cta-divider"></div>
+    <a href="#" class="cta">
+      <span>Begin your understanding</span>
+      <span class="cta-arrow">→</span>
+    </a>
+  </div>
+
+</main>
+
+<script>
+(function() {
+  const els = document.querySelectorAll('.section, .quote-panel, .closing, .cta-wrap');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+      }
+    });
+  }, { threshold: 0.07, rootMargin: '0px 0px -30px 0px' });
+  els.forEach(el => io.observe(el));
+})();
+</script>
+
+</body>
+</html>
